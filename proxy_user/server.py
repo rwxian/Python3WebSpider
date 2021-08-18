@@ -1,3 +1,7 @@
+"""
+接口模块，通过Web api的方式从redis中获取代理进行使用
+"""
+
 from flask import Flask, g
 from .db import RedisClient
 

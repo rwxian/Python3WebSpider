@@ -1,3 +1,7 @@
+"""
+
+"""
+
 from .db import RedisClient
 from .crawler import Crawler
 
@@ -23,9 +27,9 @@ class Getter():
 
     def run(self):
         print("获取器开始执行".center(20, '='))
-        if not self.is_over_threshold():
+        if not self.is_over_threshold():                # 未达到代理池限制
             for callback_label in range(self.crawler.__CrawlFuncCount__):
                 callback = self.crawler.__CrawlFunc__[callback_label]
                 proxies = self.crawler.get_proxies(callback)
-                for proxy in proxies:
+                for proxy in proxies:                   # 把代理保存到redis
                     self.redis.add(proxy)

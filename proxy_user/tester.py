@@ -1,5 +1,5 @@
 """
-检测模块
+检测模块，用于检测代理是否可用
 """
 import asyncio
 import time
