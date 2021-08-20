@@ -9,7 +9,7 @@ from .crawler import Crawler
 POOL_UPPER_THRESHOLD = 10000
 
 
-class Getter():
+class Getter:
     """动态调用crawl开头到方法，获取抓取到到代理，将其加入到数据库存储起来"""
     def __init__(self):
         self.redis = RedisClient()
