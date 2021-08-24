@@ -6,7 +6,7 @@ import time
 
 from aiohttp import ClientError, ClientConnectorError
 
-from .db import RedisClient
+from proxy_user.db import RedisClient
 import aiohttp
 
 VALID_STATUS_CODES = [200]
@@ -31,13 +31,13 @@ class Tester(object):
                     proxy = proxy.decode('utf-8')
                 real_proxy = 'http://' + proxy
                 print('正在测试', proxy)
-                async with session.get(TEST_URL, proxy=real_proxy, timeout=15) as response:
+                async with session.get(TEST_URL, proxy=real_proxy, timeout=150) as response:
                     if response.status in VALID_STATUS_CODES:
                         self.redis.max(proxy)
                         print('代理可用', proxy)
                     else:
                         self.redis.decrease(proxy)
-                        print('请求响应码不合法', proxy)
+                        print('代理请求响应码不合法', proxy)
             except (ClientError, ClientConnectorError, TimeoutError, AttributeError):
                 self.redis.decrease(proxy)
                 print('代理请求失败', proxy)
@@ -56,3 +56,9 @@ class Tester(object):
                 time.sleep(5)
         except Exception as e:
             print('测试器发生错误', e.args)
+
+
+if __name__ == '__main__':
+    tester = Tester()
+    print('测试器开始执行')
+    tester.run()

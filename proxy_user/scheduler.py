@@ -4,13 +4,13 @@
 
 import time
 from multiprocessing import Process
-from .server import app
-from .getter import Getter
-from .tester import Tester
+from proxy_user.server import app
+from proxy_user.getter import Getter
+from proxy_user.tester import Tester
 
 
 TESTER_CYCLE = 20
-GETTER_CYCLE = 20
+GETTER_CYCLE = 200
 TESTER_ENABLED = True       # 测试模块
 GETTER_ENABLED = True       # 获取模块
 API_ENABLED = True          # 接口模块
@@ -18,7 +18,8 @@ API_HOST = 'localhost'
 API_PORT = '8888'
 
 
-class Scheduler():
+class Scheduler:
+
     def schedule_tester(self, cycle=TESTER_CYCLE):
         """
         定时测试代理
@@ -51,13 +52,18 @@ class Scheduler():
 
     def run(self):
         print('代理池开始运行')
-        if TESTER_ENABLED:
-            tester_process = Process(target=self.schedule_teste)
+        if TESTER_ENABLED:              # 测试模块
+            tester_process = Process(target=self.schedule_tester)
             tester_process.start()
 
-        if GETTER_ENABLED:
+        if GETTER_ENABLED:              # 代理抓取模块
             getter_process = Process(target=self.schedule_getter)
             getter_process.start()
 
-        if API_ENABLED:
+        if API_ENABLED:                 # 接口模块
             api_process = Process(target=self.schedule_api)
+            api_process.start()
+
+
+if __name__ == '__main__':
+    Scheduler().run()

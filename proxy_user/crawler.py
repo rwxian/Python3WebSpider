@@ -30,18 +30,19 @@ class ProxyMetaclass(type):
         :return:
         """
         count = 0
-        attrs['__CraslFunc__'] = []
+        attrs['__CrawlFunc__'] = []
         # 遍历attrs，获取类的所有方法，添加到__CraslFunc__中，把crawl开头的方法定义成了一个属性
         for k, v in attrs.items():
-            if 'crawl_' in k and not k.__antations__['deprecated']:  # 方法以crawl_开头且方法未弃用
+            # v是方法且方法以crawl_开头且方法未弃用（v.__doc__中是否包含deprecated），此处的v相当于function对象，可以使用dir(v)查看它的所有属性。
+            if 'crawl_' in k and callable(v) and 'deprecated' not in v.__doc__:
                 attrs['__CrawlFunc__'].append(k)
                 count += 1
         attrs['__CrawlFuncCount__'] = count
         return type.__new__(cls, name, bases, attrs)
 
 
-# class Crawler(object, metaclass=ProxyMetaclass):
-class Crawler(object):
+class Crawler(object, metaclass=ProxyMetaclass):
+# class Crawler(object):
     """
     定义到各大网站抓取代理的方法，抓取后以ip: 端口的形式返回
     """
@@ -110,7 +111,6 @@ class Crawler(object):
                 td.find('p').remove()
                 yield td.text().replace(' ', '')
 
-    @staticmethod
     def crawl_ihua(self, page_count=5):
         """小幻http代理，目前可用"""
         start_url = 'https://ip.ihuan.me/?page={}'
@@ -118,17 +118,17 @@ class Crawler(object):
         try:
             for url in urls:
                 html = utils_class.get_page(url)
-                xpath_obj = etree.HTML(html)  # 构造xpath解析对象
-                res = xpath_obj.xpath('//div[@class="table-responsive"]/table/tbody/tr')  # 获取到所有代理tr
-                for tr in res:  # 循环tr，解析出ip和端口
-                    tr_html = etree.tostring(tr)
-                    host = etree.HTML(tr_html).xpath('//tr/td[1]/a/text()')
-                    port = etree.HTML(tr_html).xpath('//tr/td[2]/text()')
-                    yield ':'.join([host[0], port[0]])
+                if len(html) > 1 and html != '':
+                    xpath_obj = etree.HTML(html)  # 构造xpath解析对象
+                    res = xpath_obj.xpath('//div[@class="table-responsive"]/table/tbody/tr')  # 获取到所有代理tr
+                    for tr in res:  # 循环tr，解析出ip和端口
+                        tr_html = etree.tostring(tr)
+                        host = etree.HTML(tr_html).xpath('//tr/td[1]/a/text()')
+                        port = etree.HTML(tr_html).xpath('//tr/td[2]/text()')
+                        yield ':'.join([host[0], port[0]])
         except Exception as e:
             raise e
 
-    @staticmethod
     def crawl_kuaidaili(self, page_count=5):
         """
         快代理
@@ -139,7 +139,7 @@ class Crawler(object):
         try:
             for url in urls:
                 html = utils_class.get_page(url)
-                if len(html) > 1:
+                if len(html) > 1 and html != '':
                     xpath_obj = etree.HTML(html)  # 构造xpath解析对象
                     res = xpath_obj.xpath('//*[@id="list"]/table/tbody/tr')  # 获取到所有代理tr
                     for tr in res:  # 循环tr，解析出ip和端口
@@ -152,11 +152,11 @@ class Crawler(object):
             raise e
 
 
-# if __name__ == '__main__':
-#     crawl = Crawler()
-#     daili666 = crawl.crawl_kuaidaili()
-#     # a = crawl.crawl_daili66()
-#     # print(daili666)
-#     for i in daili666:
-#         print(i)
-#         print('=======================')
+if __name__ == '__main__':
+    crawl = Crawler()
+    daili666 = crawl.crawl_kuaidaili()
+    # a = crawl.crawl_daili66()
+    # print(daili666)
+    for i in daili666:
+        print(i)
+        print('=======================')

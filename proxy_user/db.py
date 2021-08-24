@@ -2,13 +2,13 @@
 存储模块，把代理以ip:端口的形式存储到redis中
 """
 
-MAX_SCORE = 100
-MIN_SCORE = 0
-INITIAL_SCORE = 10
+MAX_SCORE = 100                 # 最大分数
+MIN_SCORE = 0                   # 最小分数
+INITIAL_SCORE = 10              # 初始分数
 REDIS_HOST = 'localhost'
 REDIS_PORT = '6379'
-REDIS_PASSWORD = None
-REDIS_KEY = 'proxies'
+REDIS_PASSWORD = '123456'
+REDIS_KEY = 'proxies'           # 所有代理的键名
 
 from random import choice
 import redis
@@ -17,6 +17,7 @@ import redis
 class RedisClient(object):
     def __init__(self, host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD):
         self.db = redis.StrictRedis(host=host, port=port, password=password, decode_responses=True)
+        print('redis连接成功'.center(30, '-'))
 
     def add(self, proxy, score=INITIAL_SCORE):
         """
@@ -26,7 +27,7 @@ class RedisClient(object):
         :return:      添加结果
         """
         if not self.db.zscore(REDIS_KEY, proxy):
-            return self.db.zadd(REDIS_KEY, score, proxy)
+            return self.db.zadd(REDIS_KEY, {proxy: score})
 
     def random(self):
         """
@@ -72,7 +73,8 @@ class RedisClient(object):
         :return:
         """
         print('代理', proxy, '可用， 分数设置为', MAX_SCORE)
-        return self.db.zadd(REDIS_KEY, MAX_SCORE, proxy)
+        # return self.db.zadd(REDIS_KEY, MAX_SCORE, proxy)
+        return self.db.zadd(REDIS_KEY, {proxy, MAX_SCORE})
 
     def count(self):
         """
@@ -87,3 +89,11 @@ class RedisClient(object):
         :return:
         """
         return self.db.zrangebyscore(REDIS_KEY, MIN_SCORE, MAX_SCORE)
+
+
+if __name__ == '__main__':
+    redis = RedisClient()
+    redis.add('123.232.12.23:8080')
+    a = redis.all()
+    print(a)
+
